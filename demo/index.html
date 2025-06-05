@@ -209,14 +209,14 @@
             showLoading();
             const contactName = getContactName();
             if (!contactName) {
-                showError('Whoops, no contact name provided! Try a URL like #koolers to meet our team!');
+                showError('Whoops, no contact name provided! Try a URL like /#koolers to meet our team!');
                 return;
             }
         
             try {
                 const response = await fetch(`./contacts/${contactName}.vcf`);
                 if (!response.ok) {
-                    throw new Error(`Oops, looks like we don’t have a ${contactName} on our team!`);
+                    throw new Error(`Oops, looks like we don’t have a "${contactName}" on our team!`);
                 }
                 const vcfText = await response.text();
                 const contact = parseVCF(vcfText);
