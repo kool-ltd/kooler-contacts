@@ -124,7 +124,8 @@
                     }
                     if (line.startsWith('ORG:')) contact.company = line.replace('ORG:', '');
                     if (line.startsWith('TITLE:')) contact.title = line.replace('TITLE:', '');
-                    if (line.startsWith('TEL;WORK;VOICE:')) contact.phone = line.replace('TEL;WORK;VOICE:', '');
+                    if (line.startsWith('TEL;WORK;VOICE:')) contact.workPhone = line.replace('TEL;WORK;VOICE:', '');
+                    if (line.startsWith('TEL;CELL:') || line.startsWith('TEL;MOBILE:')) contact.mobilePhone = line.replace(/TEL;(CELL|MOBILE):/, '');
                     if (line.startsWith('EMAIL;PREF;INTERNET:')) contact.email = line.replace('EMAIL;PREF;INTERNET:', '');
                     if (line.startsWith('ADR;WORK;PREF:')) {
                         const addressParts = line.replace('ADR;WORK;PREF:', '').split(';').filter(part => part.trim());
@@ -159,10 +160,15 @@
                             <span class="label">Email:</span>
                             <span class="value"><a href="mailto:${contact.email}">${contact.email}</a></span>
                         </div>` : ''}
-                    ${contact.phone ? `
+                    ${contact.workPhone ? `
                         <div class="info-row">
-                            <span class="label">Phone:</span>
-                            <span class="value"><a href="tel:${contact.phone}">${contact.phone}</a></span>
+                            <span class="label">Work Phone:</span>
+                            <span class="value"><a href="tel:${contact.workPhone}">${contact.workPhone}</a></span>
+                        </div>` : ''}
+                    ${contact.mobilePhone ? `
+                        <div class="info-row">
+                            <span class="label">Mobile Phone:</span>
+                            <span class="value"><a href="tel:${contact.mobilePhone}">${contact.mobilePhone}</a></span>
                         </div>` : ''}
                     ${contact.address ? `
                         <div class="info-row">
