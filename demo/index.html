@@ -3,58 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCF Reader</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        .contact {
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-    </style>
+    <title>Contact VCF</title>
 </head>
 <body>
-    <h1>Contact Details</h1>
-    <div id="contacts"></div>
+    <h1>Contact VCF</h1>
+    <p id="message">Loading contact...</p>
 
     <script>
-        const vcfFiles = {
-            '/demo': 'contacts/demo.vcf',
-        };
+        // Get the contact name from the URL path (e.g., /persona from demo.com/persona)
+        const contactName = window.location.pathname.split('/').pop() || 'default';
+        const vcfFilePath = `./contacts/${contactName}.vcf`;
 
-        // Get the current path
-        const path = window.location.pathname;
-        const vcfFile = vcfFiles[path];
-
-        if (vcfFile) {
-            fetch(vcfFile)
-                .then(response => response.text())
-                .then(content => displayContacts(content))
-                .catch(error => console.error('Error fetching VCF file:', error));
-        } else {
-            document.getElementById('contacts').innerText = 'Contact not found.';
-        }
-
-        function displayContacts(content) {
-            const contactsDiv = document.getElementById('contacts');
-            const contacts = content.split('BEGIN:VCARD');
-            contacts.forEach(contact => {
-                if (contact.includes('END:VCARD')) {
-                    const nameMatch = contact.match(/FN:(.*)/);
-                    if (nameMatch) {
-                        const name = nameMatch[1].trim();
-                        const contactDiv = document.createElement('div');
-                        contactDiv.className = 'contact';
-                        contactDiv.textContent = name;
-                        contactsDiv.appendChild(contactDiv);
-                    }
+        // Function to fetch and serve the VCF file
+        async function loadVcfFile() {
+            try {
+                const response = await fetch(vcfFilePath);
+                if (!response.ok) {
+                    throw new Error(`VCF file for ${contactName} not found`);
                 }
-            });
+                const vcfContent = await response.text();
+
+                // Display the VCF content (optional, for debugging)
+                document.getElementById('message').textContent = 'Contact loaded successfully!';
+
+                // Create a downloadable VCF file
+                const blob = new Blob([vcfContent], { type: 'text/vcard' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${contactName}.vcf`;
+                link.textContent = `Download ${contactName}.vcf`;
+                document.body.appendChild(link);
+
+                // Optionally auto-trigger download
+                link.click();
+            } catch (error) {
+                document.getElementById('message').textContent = `Error: ${error.message}`;
+                console.error(error);
+            }
         }
+
+        // Run the function on page load
+        loadVcfFile();
     </script>
 </body>
 </html>
