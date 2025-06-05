@@ -22,6 +22,7 @@
             padding: 20px;
             max-width: 400px;
             width: 100%;
+            text-align: center;
         }
         .card h1 {
             margin: 0 0 20px;
@@ -33,10 +34,8 @@
         }
         .error {
             color: red;
-            text-align: center;
         }
         .loading {
-            text-align: center;
             font-style: italic;
         }
     </style>
@@ -45,7 +44,7 @@
     <div id="contact-card" class="card"></div>
 
     <script>
-        // Function to parse VCF content
+        // Parse VCF content
         function parseVCF(vcfContent) {
             const lines = vcfContent.split('\n');
             const contact = {};
@@ -65,7 +64,7 @@
             return contact;
         }
 
-        // Function to display contact information
+        // Display contact information
         function displayContact(contact) {
             const card = document.getElementById('contact-card');
             card.innerHTML = `
@@ -78,24 +77,20 @@
             `;
         }
 
-        // Function to show error message
+        // Show error message
         function showError(message) {
-            const card = document.getElementById('contact-card');
-            card.innerHTML = `<p class="error">${message}</p>`;
+            document.getElementById('contact-card').innerHTML = `<p class="error">${message}</p>`;
         }
 
-        // Function to show loading state
+        // Show loading state
         function showLoading() {
-            const card = document.getElementById('contact-card');
-            card.innerHTML = `<p class="loading">Loading...</p>`;
+            document.getElementById('contact-card').innerHTML = `<p class="loading">Loading...</p>`;
         }
 
-        // Get contact name from URL
+        // Get contact name from URL hash
         function getContactName() {
-            const path = window.location.pathname;
-            // Handle both /persona and /demo/persona
-            const parts = path.split('/').filter(part => part);
-            return parts[parts.length - 1] || '';
+            const hash = window.location.hash.replace(/^#/, ''); // Remove '#' from #peter
+            return hash || ''; // Return empty string if no hash
         }
 
         // Load and display VCF
@@ -103,25 +98,29 @@
             showLoading();
             const contactName = getContactName();
             if (!contactName) {
-                showError('No contact specified in URL');
+                showError('No contact specified. Use a URL like /#peter or /#persona.');
                 return;
             }
 
             try {
                 const response = await fetch(`./contacts/${contactName}.vcf`);
                 if (!response.ok) {
-                    throw new Error('Contact not found');
+                    throw new Error(`Contact "${contactName}" not found.`);
                 }
                 const vcfText = await response.text();
                 const contact = parseVCF(vcfText);
+                if (!contact.fullName && !contact.name) {
+                    throw new Error('Invalid VCF file: No name found.');
+                }
                 displayContact(contact);
             } catch (error) {
-                showError('Error loading contact: ' + error.message);
+                showError(`Error: ${error.message}`);
             }
         }
 
-        // Load contact when page loads
+        // Load contact when page loads or hash changes
         window.onload = loadContact;
+        window.onhashchange = loadContact; // Reload contact if hash changes
     </script>
 </body>
 </html>
