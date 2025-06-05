@@ -6,37 +6,80 @@
     <title>Contact Card</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #f4f4f9;
             margin: 0;
             padding: 20px;
         }
         .card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
             max-width: 400px;
             width: 100%;
             text-align: center;
         }
+        .card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 16px;
+        }
         .card h1 {
-            margin: 0 0 20px;
             font-size: 24px;
+            margin: 0 0 16px;
+            color: #333;
         }
         .card p {
-            margin: 10px 0;
             font-size: 16px;
+            margin: 8px 0;
+            color: #555;
+        }
+        .card p strong {
+            color: #333;
+        }
+        .card a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .card a:hover {
+            text-decoration: underline;
+        }
+        .add-contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 10px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .add-contact-btn:hover {
+            background-color: #0056b3;
+        }
+        .add-contact-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
         }
         .error {
-            color: red;
+            color: #d32f2f;
+            font-size: 16px;
         }
         .loading {
             font-style: italic;
+            color: #777;
         }
     </style>
 </head>
@@ -44,37 +87,83 @@
     <div id="contact-card" class="card"></div>
 
     <script>
+        // Decode QUOTED-PRINTABLE
+        function decodeQuotedPrintable(text) {
+            return text.replace(/=([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(parseInt(p1, 16)))
+                       .replace(/=\r\n/g, '');
+        }
+
         // Parse VCF content
         function parseVCF(vcfContent) {
             const lines = vcfContent.split('\n');
             const contact = {};
+            let photoData = '';
+            let inPhoto = false;
+
             lines.forEach(line => {
                 line = line.trim();
-                if (line.startsWith('FN:')) contact.fullName = line.replace('FN:', '');
-                if (line.startsWith('N:')) {
-                    const [lastName, firstName] = line.replace('N:', '').split(';');
-                    contact.name = `${firstName} ${lastName}`.trim();
+                if (line.startsWith('PHOTO;TYPE=JPEG;ENCODING=BASE64:')) {
+                    inPhoto = true;
+                    photoData = line.replace('PHOTO;TYPE=JPEG;ENCODING=BASE64:', '').trim();
+                } else if (inPhoto && !line.startsWith('X-MS-OL-DESIGN') && !line.startsWith('REV:') && !line.startsWith('END:VCARD')) {
+                    photoData += line.trim();
+                } else if (inPhoto && (line.startsWith('X-MS-OL-DESIGN') || line.startsWith('REV:') || line.startsWith('END:VCARD'))) {
+                    inPhoto = false;
+                    contact.photo = `data:image/jpeg;base64,${photoData}`;
+                } else {
+                    if (line.startsWith('FN:')) contact.fullName = line.replace('FN:', '');
+                    if (line.startsWith('N:')) {
+                        const [lastName, firstName] = line.replace('N:', '').split(';');
+                        contact.name = `${firstName} ${lastName}`.trim();
+                    }
+                    if (line.startsWith('ORG:')) contact.company = line.replace('ORG:', '');
+                    if (line.startsWith('TITLE:')) contact.title = line.replace('TITLE:', '');
+                    if (line.startsWith('TEL;WORK;VOICE:')) contact.phone = line.replace('TEL;WORK;VOICE:', '');
+                    if (line.startsWith('EMAIL;PREF;INTERNET:')) contact.email = line.replace('EMAIL;PREF;INTERNET:', '');
+                    if (line.startsWith('ADR;WORK;PREF:')) {
+                        contact.address = line.replace('ADR;WORK;PREF:', '').replace(/;/g, ', ').trim();
+                    }
+                    if (line.startsWith('LABEL;WORK;PREF;ENCODING=QUOTED-PRINTABLE:')) {
+                        contact.addressLabel = decodeQuotedPrintable(line.replace('LABEL;WORK;PREF;ENCODING=QUOTED-PRINTABLE:', ''));
+                    }
+                    if (line.startsWith('URL;WORK:')) contact.website = line.replace('URL;WORK:', '');
                 }
-                if (line.startsWith('ORG:')) contact.company = line.replace('ORG:', '');
-                if (line.startsWith('EMAIL:')) contact.email = line.replace('EMAIL:', '');
-                if (line.startsWith('TEL:')) contact.phone = line.replace('TEL:', '');
-                if (line.startsWith('ADR:')) contact.address = line.replace('ADR:', '').replace(/;/g, ', ');
-                if (line.startsWith('TITLE:')) contact.title = line.replace('TITLE:', '');
             });
+
             return contact;
         }
 
         // Display contact information
-        function displayContact(contact) {
+        function displayContact(contact, contactName, vcfContent) {
             const card = document.getElementById('contact-card');
             card.innerHTML = `
+                ${contact.photo ? `<img src="${contact.photo}" alt="${contact.fullName || contact.name || 'Contact'}">` : ''}
                 <h1>${contact.fullName || contact.name || 'Unknown Name'}</h1>
                 ${contact.title ? `<p><strong>Title:</strong> ${contact.title}</p>` : ''}
                 ${contact.company ? `<p><strong>Company:</strong> ${contact.company}</p>` : ''}
                 ${contact.email ? `<p><strong>Email:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>` : ''}
                 ${contact.phone ? `<p><strong>Phone:</strong> <a href="tel:${contact.phone}">${contact.phone}</a></p>` : ''}
                 ${contact.address ? `<p><strong>Address:</strong> ${contact.address}</p>` : ''}
+                ${contact.addressLabel ? `<p><strong>Address Label:</strong> ${contact.addressLabel}</p>` : ''}
+                ${contact.website ? `<p><strong>Website:</strong> <a href="${contact.website}" target="_blank">${contact.website}</a></p>` : ''}
+                <button class="add-contact-btn" onclick="downloadVCF('${contactName}', \`${vcfContent}\`)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13h-4v4h-2v-4H7v-2h4v-4h2v4h4v2z"/>
+                    </svg>
+                    Add Contact
+                </button>
             `;
+        }
+
+        // Download VCF file
+        function downloadVCF(contactName, vcfContent) {
+            const blob = new Blob([vcfContent], { type: 'text/vcard' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${contactName}.vcf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         // Show error message
@@ -90,7 +179,7 @@
         // Get contact name from URL hash
         function getContactName() {
             const hash = window.location.hash.replace(/^#/, ''); // Remove '#' from #peter
-            return hash || ''; // Return empty string if no hash
+            return hash || '';
         }
 
         // Load and display VCF
@@ -112,7 +201,7 @@
                 if (!contact.fullName && !contact.name) {
                     throw new Error('Invalid VCF file: No name found.');
                 }
-                displayContact(contact);
+                displayContact(contact, contactName, vcfText);
             } catch (error) {
                 showError(`Error: ${error.message}`);
             }
@@ -120,7 +209,7 @@
 
         // Load contact when page loads or hash changes
         window.onload = loadContact;
-        window.onhashchange = loadContact; // Reload contact if hash changes
+        window.onhashchange = loadContact;
     </script>
 </body>
 </html>
