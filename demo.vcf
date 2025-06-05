@@ -5,7 +5,10 @@ FN:Francis Pun
 ORG:Kool
 TITLE:Product Designer
 TEL;WORK;VOICE:24082247
-X-MS-OL-DEFAULT-POSTAL-ADDRESS:0
+ADR;WORK;PREF:;;Flat A, 10/F, Goodwill Industrial Bldg,;36 Pak Tin Par St., Tsuen Wan, NT, HK;;;Hong Kong SAR
+LABEL;WORK;PREF;ENCODING=QUOTED-PRINTABLE:Flat A, 10/F, Goodwill Industrial Bldg,=0D=0A=
+36 Pak Tin Par St., Tsuen Wan, NT, HK
+X-MS-OL-DEFAULT-POSTAL-ADDRESS:2
 URL;WORK:https://www.kool.com.hk
 EMAIL;PREF;INTERNET:francispun@kool.com.hk
 PHOTO;TYPE=JPEG;ENCODING=BASE64:
@@ -234,6 +237,6 @@ PHOTO;TYPE=JPEG;ENCODING=BASE64:
  0/V9akXqb6+IU/8AAYgg/PNes+F/g/8ACzwWF/4Rf4f6Dp8i9Jo7GMzfjIQXP512FFdMMPSp
  /DFI+Wx3EmcZnpi8TOa7OTt9234CdOBwBS0UVseIFFFFABRRRQAUUUUAFFFFAH//2Q==
 
-X-MS-OL-DESIGN;CHARSET=utf-8:<card xmlns="http://schemas.microsoft.com/office/outlook/12/electronicbusinesscards" ver="1.0" layout="left" bgcolor="ffffff"><img xmlns="" align="tleft" area="32" use="photo"/><fld xmlns="" prop="name" align="left" dir="ltr" style="b" color="000000" size="10"/><fld xmlns="" prop="org" align="left" dir="ltr" color="000000" size="8"/><fld xmlns="" prop="title" align="left" dir="ltr" color="000000" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="telwork" align="left" dir="ltr" color="d48d2a" size="8"><label align="right" color="626262">Work</label></fld><fld xmlns="" prop="email" align="left" dir="ltr" color="d48d2a" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="webwork" align="left" dir="ltr" color="000000" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/></card>
-REV:20250529T094929Z
+X-MS-OL-DESIGN;CHARSET=utf-8:<card xmlns="http://schemas.microsoft.com/office/outlook/12/electronicbusinesscards" ver="1.0" layout="left" bgcolor="ffffff"><img xmlns="" align="tleft" area="32" use="photo"/><fld xmlns="" prop="name" align="left" dir="ltr" style="b" color="000000" size="10"/><fld xmlns="" prop="org" align="left" dir="ltr" color="000000" size="8"/><fld xmlns="" prop="title" align="left" dir="ltr" color="000000" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="telwork" align="left" dir="ltr" color="d48d2a" size="8"><label align="right" color="626262">Work</label></fld><fld xmlns="" prop="email" align="left" dir="ltr" color="d48d2a" size="8"/><fld xmlns="" prop="addrwork" align="left" dir="ltr" color="000000" size="8"/><fld xmlns="" prop="webwork" align="left" dir="ltr" color="000000" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/><fld xmlns="" prop="blank" size="8"/></card>
+REV:20250605T022053Z
 END:VCARD
