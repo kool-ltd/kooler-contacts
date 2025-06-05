@@ -3,30 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0;url=demo.vcf">
-    <title>Redirecting...</title>
+    <title>VCF Reader</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
+            padding: 20px;
         }
-        button {
-            background-color: #d00024;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+        .contact {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-        }
-        button:hover {
-            opacity: 0.8;
         }
     </style>
 </head>
 <body>
-    <h1>Francis Pun</h1>
-    <button onclick="window.location.href='demo.vcf'">View Contact</button>.</p>
+    <h1>Contact Details</h1>
+    <div id="contacts"></div>
+
+    <script>
+        const vcfFiles = {
+            '/demo': 'contacts/demo.vcf',
+        };
+
+        // Get the current path
+        const path = window.location.pathname;
+        const vcfFile = vcfFiles[path];
+
+        if (vcfFile) {
+            fetch(vcfFile)
+                .then(response => response.text())
+                .then(content => displayContacts(content))
+                .catch(error => console.error('Error fetching VCF file:', error));
+        } else {
+            document.getElementById('contacts').innerText = 'Contact not found.';
+        }
+
+        function displayContacts(content) {
+            const contactsDiv = document.getElementById('contacts');
+            const contacts = content.split('BEGIN:VCARD');
+            contacts.forEach(contact => {
+                if (contact.includes('END:VCARD')) {
+                    const nameMatch = contact.match(/FN:(.*)/);
+                    if (nameMatch) {
+                        const name = nameMatch[1].trim();
+                        const contactDiv = document.createElement('div');
+                        contactDiv.className = 'contact';
+                        contactDiv.textContent = name;
+                        contactsDiv.appendChild(contactDiv);
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
