@@ -3,49 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact VCF</title>
+    <title>Contact Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+        }
+        .card h1 {
+            margin: 0 0 20px;
+            font-size: 24px;
+        }
+        .card p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .error {
+            color: red;
+            text-align: center;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-    <h1>Contact VCF</h1>
-    <p id="message">Loading contact...</p>
+    <div id="contact-card" class="card"></div>
 
     <script>
-        // Get the contact name from the URL path (e.g., 'persona' from /demo/persona)
-        const pathParts = window.location.pathname.split('/').filter(part => part);
-        const contactName = pathParts[pathParts.length - 1] || 'default'; // Last part of the path
-        const vcfFilePath = `/demo/contacts/${contactName}.vcf`; // Adjust path for /demo subdirectory
-
-        // Function to fetch and serve the VCF file
-        async function loadVcfFile() {
-            try {
-                const response = await fetch(vcfFilePath);
-                if (!response.ok) {
-                    throw new Error(`VCF file for ${contactName} not found`);
+        // Function to parse VCF content
+        function parseVCF(vcfContent) {
+            const lines = vcfContent.split('\n');
+            const contact = {};
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('FN:')) contact.fullName = line.replace('FN:', '');
+                if (line.startsWith('N:')) {
+                    const [lastName, firstName] = line.replace('N:', '').split(';');
+                    contact.name = `${firstName} ${lastName}`.trim();
                 }
-                const vcfContent = await response.text();
+                if (line.startsWith('ORG:')) contact.company = line.replace('ORG:', '');
+                if (line.startsWith('EMAIL:')) contact.email = line.replace('EMAIL:', '');
+                if (line.startsWith('TEL:')) contact.phone = line.replace('TEL:', '');
+                if (line.startsWith('ADR:')) contact.address = line.replace('ADR:', '').replace(/;/g, ', ');
+                if (line.startsWith('TITLE:')) contact.title = line.replace('TITLE:', '');
+            });
+            return contact;
+        }
 
-                // Display success message
-                document.getElementById('message').textContent = 'Contact loaded successfully!';
+        // Function to display contact information
+        function displayContact(contact) {
+            const card = document.getElementById('contact-card');
+            card.innerHTML = `
+                <h1>${contact.fullName || contact.name || 'Unknown Name'}</h1>
+                ${contact.title ? `<p><strong>Title:</strong> ${contact.title}</p>` : ''}
+                ${contact.company ? `<p><strong>Company:</strong> ${contact.company}</p>` : ''}
+                ${contact.email ? `<p><strong>Email:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>` : ''}
+                ${contact.phone ? `<p><strong>Phone:</strong> <a href="tel:${contact.phone}">${contact.phone}</a></p>` : ''}
+                ${contact.address ? `<p><strong>Address:</strong> ${contact.address}</p>` : ''}
+            `;
+        }
 
-                // Create a downloadable VCF file
-                const blob = new Blob([vcfContent], { type: 'text/vcard' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${contactName}.vcf`;
-                link.textContent = `Download ${contactName}.vcf`;
-                document.body.appendChild(link);
+        // Function to show error message
+        function showError(message) {
+            const card = document.getElementById('contact-card');
+            card.innerHTML = `<p class="error">${message}</p>`;
+        }
 
-                // Auto-trigger download (optional)
-                link.click();
+        // Function to show loading state
+        function showLoading() {
+            const card = document.getElementById('contact-card');
+            card.innerHTML = `<p class="loading">Loading...</p>`;
+        }
+
+        // Get contact name from URL
+        function getContactName() {
+            const path = window.location.pathname;
+            // Handle both /persona and /demo/persona
+            const parts = path.split('/').filter(part => part);
+            return parts[parts.length - 1] || '';
+        }
+
+        // Load and display VCF
+        async function loadContact() {
+            showLoading();
+            const contactName = getContactName();
+            if (!contactName) {
+                showError('No contact specified in URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`./contacts/${contactName}.vcf`);
+                if (!response.ok) {
+                    throw new Error('Contact not found');
+                }
+                const vcfText = await response.text();
+                const contact = parseVCF(vcfText);
+                displayContact(contact);
             } catch (error) {
-                document.getElementById('message').textContent = `Error: ${error.message}`;
-                console.error(error);
+                showError('Error loading contact: ' + error.message);
             }
         }
 
-        // Run the function on page load
-        loadVcfFile();
+        // Load contact when page loads
+        window.onload = loadContact;
     </script>
 </body>
 </html>
