@@ -132,56 +132,66 @@
     <div id="contact-card" class="card"></div>
 
     <script>
-        // Parse VCF content
         function parseVCF(vcfContent) {
-            const lines = vcfContent.split('\n');
+            if (!vcfContent || typeof vcfContent !== 'string') {
+                console.error('Invalid VCF content: Content is undefined or not a string');
+                return { en: {}, zh: {} };
+            }
+
+            const lines = vcfContent.split('\n').filter(line => line && typeof line === 'string' && line.trim());
             const contact = { en: {}, zh: {} };
             let photoData = '';
             let inPhoto = false;
 
             lines.forEach(line => {
                 line = line.trim();
-                if (line.startsWith('PHOTO:')) {
-                    inPhoto = true;
-                    photoData = line.replace(/PHOTO.*?:/, '').trim();
-                } else if (inPhoto && !line.startsWith('CATEGORIES:') && !line.startsWith('END:VCARD')) {
-                    photoData += line.trim();
-                } else if (inPhoto && (line.startsWith('CATEGORIES:') || line.startsWith('END:VCARD'))) {
-                    inPhoto = false;
-                    contact.en.photo = contact.zh.photo = `data:image/jpeg;base64,${photoData}`;
-                } else {
-                    if (line.startsWith('FN:')) contact.en.fullName = line.replace('FN:', '');
-                    if (line.startsWith('NICKNAME:')) contact.en.nickname = line.replace('NICKNAME:', '');
-                    if (line.startsWith('ORG:')) contact.en.company = line.replace('ORG:', '');
-                    if (line.startsWith('TITLE:')) contact.en.title = line.replace('TITLE:', '');
-                    if (line.startsWith('TEL;TYPE=WORK:')) contact.en.workPhone = line.replace('TEL;TYPE=WORK:', '');
-                    if (line.startsWith('TEL;TYPE=CELL:')) contact.en.mobilePhone = line.replace('TEL;TYPE=CELL:', '');
-                    if (line.startsWith('EMAIL;TYPE=INTERNET;TYPE=WORK:')) {
-                        contact.en.email = contact.zh.email = line.replace('EMAIL;TYPE=INTERNET;TYPE=WORK:', '');
+                if (!line) return;
+
+                try {
+                    if (line.startsWith('PHOTO:')) {
+                        inPhoto = true;
+                        photoData = line.replace(/PHOTO.*?:/, '').trim() || '';
+                    } else if (inPhoto && !line.startsWith('CATEGORIES:') && !line.startsWith('END:VCARD')) {
+                        photoData += line.trim();
+                    } else if (inPhoto && (line.startsWith('CATEGORIES:') || line.startsWith('END:VCARD'))) {
+                        inPhoto = false;
+                        contact.en.photo = contact.zh.photo = photoData ? `data:image/jpeg;base64,${photoData}` : '';
+                    } else {
+                        if (line.startsWith('FN:')) contact.en.fullName = line.replace('FN:', '') || '';
+                        if (line.startsWith('NICKNAME:')) contact.en.nickname = line.replace('NICKNAME:', '') || '';
+                        if (line.startsWith('ORG:')) contact.en.company = line.replace('ORG:', '') || '';
+                        if (line.startsWith('TITLE:')) contact.en.title = line.replace('TITLE:', '') || '';
+                        if (line.startsWith('TEL;TYPE=WORK:')) contact.en.workPhone = line.replace('TEL;TYPE=WORK:', '') || '';
+                        if (line.startsWith('TEL;TYPE=CELL:')) contact.en.mobilePhone = line.replace('TEL;TYPE=CELL:', '') || '';
+                        if (line.startsWith('EMAIL;TYPE=INTERNET;TYPE=WORK:')) {
+                            contact.en.email = contact.zh.email = line.replace('EMAIL;TYPE=INTERNET;TYPE=WORK:', '') || '';
+                        }
+                        if (line.startsWith('ADR;TYPE=WORK:')) {
+                            const address = line.replace('ADR;TYPE=WORK:;;', '').replace(/\\n/g, ', ').replace(/;+/g, ', ').trim();
+                            const addressParts = address.split(';;');
+                            contact.en.address = addressParts[0] ? addressParts[0].replace(/,+/g, ', ').trim() : '';
+                            contact.zh.address = addressParts[1] ? addressParts[1].replace(/,+/g, ', ').trim() : '';
+                        }
+                        if (line.startsWith('item1.URL:')) contact.en.website1 = contact.zh.website1 = line.replace('item1.URL:', '') || '';
+                        if (line.startsWith('item2.URL:')) contact.en.website2 = contact.zh.website2 = line.replace('item2.URL:', '') || '';
+                        if (line.startsWith('NOTE:')) {
+                            const noteParts = line.replace('NOTE:', '').split('\\n');
+                            contact.en.note = noteParts[0] || '';
+                            contact.zh.note = noteParts[1] || '';
+                            contact.zh.fullName = noteParts[2] ? noteParts[2].replace('姓名: ', '') : '';
+                            contact.zh.nickname = noteParts[3] ? noteParts[3].replace('綽號: ', '') : '';
+                            contact.zh.title = noteParts[4] ? noteParts[4].replace('職位: ', '') : '';
+                            contact.zh.company = noteParts[5] ? noteParts[5].replace('公司: ', '') : '';
+                        }
                     }
-                    if (line.startsWith('ADR;TYPE=WORK:')) {
-                        const address = line.replace('ADR;TYPE=WORK:;;', '').replace(/\\n/g, ', ').replace(/;+/g, ', ').trim();
-                        contact.en.address = address.split(';;')[0].replace(/,+/g, ', ').trim();
-                        contact.zh.address = address.split(';;')[1].replace(/,+/g, ', ').trim();
-                    }
-                    if (line.startsWith('item1.URL:')) contact.en.website1 = contact.zh.website1 = line.replace('item1.URL:', '');
-                    if (line.startsWith('item2.URL:')) contact.en.website2 = contact.zh.website2 = line.replace('item2.URL:', '');
-                    if (line.startsWith('NOTE:')) {
-                        const noteParts = line.replace('NOTE:', '').split('\\n');
-                        contact.en.note = noteParts[0];
-                        contact.zh.note = noteParts[1];
-                        contact.zh.fullName = noteParts[2].replace('姓名: ', '');
-                        contact.zh.nickname = noteParts[3].replace('綽號: ', '');
-                        contact.zh.title = noteParts[4].replace('職位: ', '');
-                        contact.zh.company = noteParts[5].replace('公司: ', '');
-                    }
+                } catch (err) {
+                    console.error(`Error parsing VCF line: "${line}"`, err);
                 }
             });
 
             return contact;
         }
 
-        // Display contact information
         function displayContact(contact, contactName, lang = 'en') {
             const card = document.getElementById('contact-card');
             const data = contact[lang];
@@ -224,34 +234,29 @@
             `;
         }
 
-        // Toggle language
         function toggleLanguage(contactName, lang) {
             showLoading();
             loadContact(contactName, lang);
         }
 
-        // Show error message
         function showError(message) {
             document.getElementById('contact-card').innerHTML = `<p class="error">${message}</p>`;
         }
 
-        // Show loading state
         function showLoading() {
             document.getElementById('contact-card').innerHTML = `<p class="loading">Loading...</p>`;
         }
 
-        // Get contact name from URL hash
         function getContactName() {
             const hash = window.location.hash.replace(/^#/, '');
             return hash || '';
         }
 
-        // Load and display VCF
         async function loadContact(contactNameOverride = null, lang = 'en') {
             showLoading();
             const contactName = contactNameOverride || getContactName();
             if (!contactName) {
-                showError('Whoops, no contact name provided! Try a URL like /#koolers to meet our team!');
+                showError('Whoops, no contact name provided! Try a URL like /#harrywong to meet our team!');
                 return;
             }
 
@@ -261,17 +266,20 @@
                     throw new Error(`Oops, looks like we don’t have a "${contactName}" on our team!`);
                 }
                 const vcfText = await response.text();
+                if (!vcfText.trim()) {
+                    throw new Error('VCF file is empty or invalid.');
+                }
                 const contact = parseVCF(vcfText);
                 if (!contact.en.fullName && !contact.zh.fullName) {
                     throw new Error('Invalid VCF file: No name found.');
                 }
                 displayContact(contact, contactName, lang);
             } catch (error) {
+                console.error('Error loading contact:', error);
                 showError(error.message);
             }
         }
 
-        // Load contact when page loads or hash changes
         window.onload = () => loadContact();
         window.onhashchange = () => loadContact();
     </script>
