@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Card</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=person_add,phone,mail" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=call,smartphone,mail,person_add" />
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -24,6 +24,7 @@
             max-width: 400px;
             width: 100%;
             text-align: center;
+            position: relative;
         }
         .card img {
             width: 120px;
@@ -85,13 +86,15 @@
             text-decoration: underline;
         }
         .language-toggle {
-            margin: 16px 0;
-            padding: 10px 20px;
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 8px 12px;
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             transition: background-color 0.2s;
         }
@@ -151,37 +154,41 @@
                     if (line.startsWith('PHOTO:')) {
                         inPhoto = true;
                         photoData = line.replace(/PHOTO.*?:/, '').trim() || '';
+                        if (photoData.startsWith('http')) {
+                            contact.en.photo = contact.zh.photo = photoData;
+                            inPhoto = false;
+                        }
                     } else if (inPhoto && !line.startsWith('CATEGORIES:') && !line.startsWith('END:VCARD')) {
                         photoData += line.trim();
                     } else if (inPhoto && (line.startsWith('CATEGORIES:') || line.startsWith('END:VCARD'))) {
                         inPhoto = false;
                         contact.en.photo = contact.zh.photo = photoData ? `data:image/jpeg;base64,${photoData}` : '';
                     } else {
-                        if (line.startsWith('FN:')) contact.en.fullName = line.replace('FN:', '') || '';
-                        if (line.startsWith('NICKNAME:')) contact.en.nickname = line.replace('NICKNAME:', '') || '';
-                        if (line.startsWith('ORG:')) contact.en.company = line.replace('ORG:', '') || '';
-                        if (line.startsWith('TITLE:')) contact.en.title = line.replace('TITLE:', '') || '';
-                        if (line.startsWith('TEL;TYPE=WORK:')) contact.en.workPhone = line.replace('TEL;TYPE=WORK:', '') || '';
-                        if (line.startsWith('TEL;TYPE=CELL:')) contact.en.mobilePhone = line.replace('TEL;TYPE=CELL:', '') || '';
+                        if (line.startsWith('FN:')) contact.en.fullName = line.replace('FN:', '').replace(/\\,/g, ',') || '';
+                        if (line.startsWith('NICKNAME:')) contact.en.nickname = line.replace('NICKNAME:', '').replace(/\\,/g, ',') || '';
+                        if (line.startsWith('ORG:')) contact.en.company = line.replace('ORG:', '').replace(/\\,/g, ',') || '';
+                        if (line.startsWith('TITLE:')) contact.en.title = line.replace('TITLE:', '').replace(/\\,/g, ',') || '';
+                        if (line.startsWith('TEL;TYPE=WORK:')) contact.en.workPhone = line.replace('TEL;TYPE=WORK:', '').replace(/\\,/g, ',') || '';
+                        if (line.startsWith('TEL;TYPE=CELL:')) contact.en.mobilePhone = line.replace('TEL;TYPE=CELL:', '').replace(/\\,/g, ',') || '';
                         if (line.startsWith('EMAIL;TYPE=INTERNET;TYPE=WORK:')) {
-                            contact.en.email = contact.zh.email = line.replace('EMAIL;TYPE=INTERNET;TYPE=WORK:', '') || '';
+                            contact.en.email = contact.zh.email = line.replace('EMAIL;TYPE=INTERNET;TYPE=WORK:', '').replace(/\\,/g, ',') || '';
                         }
                         if (line.startsWith('ADR;TYPE=WORK:')) {
-                            const address = line.replace('ADR;TYPE=WORK:;;', '').replace(/\\n/g, ', ').replace(/;+/g, ', ').trim();
+                            const address = line.replace('ADR;TYPE=WORK:;;', '').replace(/\\n/g, ', ').replace(/\\,/g, ',').replace(/;+/g, ', ').trim();
                             const addressParts = address.split(';;');
                             contact.en.address = addressParts[0] ? addressParts[0].replace(/,+/g, ', ').trim() : '';
                             contact.zh.address = addressParts[1] ? addressParts[1].replace(/,+/g, ', ').trim() : '';
                         }
-                        if (line.startsWith('item1.URL:')) contact.en.website1 = contact.zh.website1 = line.replace('item1.URL:', '') || '';
-                        if (line.startsWith('item2.URL:')) contact.en.website2 = contact.zh.website2 = line.replace('item2.URL:', '') || '';
+                        if (line.startsWith('item1.URL:')) contact.en.website1 = contact.zh.website1 = line.replace('item1.URL:', '').replace(/\\,/g, ',') || '';
+                        if (line.startsWith('item2.URL:')) contact.en.website2 = contact.zh.website2 = line.replace('item2.URL:', '').replace(/\\,/g, ',') || '';
                         if (line.startsWith('NOTE:')) {
-                            const noteParts = line.replace('NOTE:', '').split('\\n');
+                            const noteParts = line.replace('NOTE:', '').replace(/\\,/g, ',').split('\\n');
                             contact.en.note = noteParts[0] || '';
                             contact.zh.note = noteParts[1] || '';
-                            contact.zh.fullName = noteParts[2] ? noteParts[2].replace('姓名: ', '') : '';
-                            contact.zh.nickname = noteParts[3] ? noteParts[3].replace('綽號: ', '') : '';
-                            contact.zh.title = noteParts[4] ? noteParts[4].replace('職位: ', '') : '';
-                            contact.zh.company = noteParts[5] ? noteParts[5].replace('公司: ', '') : '';
+                            contact.zh.fullName = noteParts[2] ? noteParts[2].replace('姓名: ', '').replace(/\\,/g, ',') : '';
+                            contact.zh.nickname = noteParts[3] ? noteParts[3].replace('綽號: ', '').replace(/\\,/g, ',') : '';
+                            contact.zh.title = noteParts[4] ? noteParts[4].replace('職位: ', '').replace(/\\,/g, ',') : '';
+                            contact.zh.company = noteParts[5] ? noteParts[5].replace('公司: ', '').replace(/\\,/g, ',') : '';
                         }
                     }
                 } catch (err) {
@@ -196,7 +203,10 @@
             const card = document.getElementById('contact-card');
             const data = contact[lang];
             card.innerHTML = `
-                ${data.photo ? `<img src="${data.photo}" alt="${data.fullName || 'Contact'}">` : ''}
+                <button class="language-toggle" onclick="toggleLanguage('${contactName}', '${lang === 'en' ? 'zh' : 'en'}')">
+                    ${lang === 'en' ? '中' : 'EN'}
+                </button>
+                ${data.photo ? `<img src="${data.photo}" alt="${data.fullName || 'Contact'}" onerror="this.style.display='none'">` : ''}
                 <h1>${data.fullName || 'Unknown Name'}</h1>
                 ${data.nickname ? `<div class="nickname">${data.nickname}</div>` : ''}
                 <div class="info-table">
@@ -204,12 +214,12 @@
                     ${data.company ? `<div class="info-row">${data.company}</div>` : ''}
                     ${data.workPhone ? `
                         <div class="info-row">
-                            <span class="material-symbols-outlined">phone</span>
+                            <span class="material-symbols-outlined">call</span>
                             <a href="tel:${data.workPhone}">${data.workPhone}</a>
                         </div>` : ''}
                     ${data.mobilePhone ? `
                         <div class="info-row">
-                            <span class="material-symbols-outlined">phone</span>
+                            <span class="material-symbols-outlined">smartphone</span>
                             <a href="tel:${data.mobilePhone}">${data.mobilePhone}</a>
                         </div>` : ''}
                     ${data.email ? `
@@ -224,9 +234,6 @@
                     ${data.website2 ? `<a href="${data.website2}" target="_blank">${data.website2}</a>` : ''}
                 </div>
                 ${data.note ? `<div class="note">${data.note}</div>` : ''}
-                <button class="language-toggle" onclick="toggleLanguage('${contactName}', '${lang === 'en' ? 'zh' : 'en'}')">
-                    ${lang === 'en' ? 'Switch to Chinese' : 'Switch to English'}
-                </button>
                 <a class="add-contact-btn" href="./contacts/${contactName}.vcf" download="${contactName}.vcf">
                     <span class="material-symbols-outlined">person_add</span>
                     Add Contact
