@@ -4,39 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Card</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=person_add,phone,mail" />
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #5B6770;
             margin: 0;
             padding: 20px;
         }
         .card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 32px;
             max-width: 400px;
             width: 100%;
             text-align: center;
         }
-        .card h1 {
-            margin: 0 0 20px;
-            font-size: 24px;
+        .card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 24px;
         }
-        .card p {
-            margin: 10px 0;
+        .card h1 {
+            font-size: 26px;
+            margin: 0 0 8px;
+            color: #333;
+        }
+        .card .nickname {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        .info-table {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            color: #555;
+        }
+        .info-row .material-symbols-outlined {
+            font-size: 20px;
+            color: #007bff;
+        }
+        .info-row a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .info-row a:hover {
+            text-decoration: underline;
+        }
+        .address, .note {
+            margin: 16px 0;
+            color: #555;
+            line-height: 1.5;
+        }
+        .websites {
+            margin: 16px 0;
+        }
+        .websites a {
+            display: block;
+            color: #007bff;
+            text-decoration: none;
+            margin: 4px 0;
+        }
+        .websites a:hover {
+            text-decoration: underline;
+        }
+        .language-toggle {
+            margin: 16px 0;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .language-toggle:hover {
+            background-color: #0056b3;
+        }
+        .add-contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 12px 20px;
+            background-color: #d00024;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .add-contact-btn:hover {
+            background-color: #a0001b;
+        }
+        .add-contact-btn .material-symbols-outlined {
+            font-size: 20px;
         }
         .error {
-            color: red;
+            color: #d32f2f;
+            font-size: 16px;
         }
         .loading {
             font-style: italic;
+            color: #777;
         }
     </style>
 </head>
@@ -47,34 +135,99 @@
         // Parse VCF content
         function parseVCF(vcfContent) {
             const lines = vcfContent.split('\n');
-            const contact = {};
+            const contact = { en: {}, zh: {} };
+            let photoData = '';
+            let inPhoto = false;
+
             lines.forEach(line => {
                 line = line.trim();
-                if (line.startsWith('FN:')) contact.fullName = line.replace('FN:', '');
-                if (line.startsWith('N:')) {
-                    const [lastName, firstName] = line.replace('N:', '').split(';');
-                    contact.name = `${firstName} ${lastName}`.trim();
+                if (line.startsWith('PHOTO:')) {
+                    inPhoto = true;
+                    photoData = line.replace(/PHOTO.*?:/, '').trim();
+                } else if (inPhoto && !line.startsWith('CATEGORIES:') && !line.startsWith('END:VCARD')) {
+                    photoData += line.trim();
+                } else if (inPhoto && (line.startsWith('CATEGORIES:') || line.startsWith('END:VCARD'))) {
+                    inPhoto = false;
+                    contact.en.photo = contact.zh.photo = `data:image/jpeg;base64,${photoData}`;
+                } else {
+                    if (line.startsWith('FN:')) contact.en.fullName = line.replace('FN:', '');
+                    if (line.startsWith('NICKNAME:')) contact.en.nickname = line.replace('NICKNAME:', '');
+                    if (line.startsWith('ORG:')) contact.en.company = line.replace('ORG:', '');
+                    if (line.startsWith('TITLE:')) contact.en.title = line.replace('TITLE:', '');
+                    if (line.startsWith('TEL;TYPE=WORK:')) contact.en.workPhone = line.replace('TEL;TYPE=WORK:', '');
+                    if (line.startsWith('TEL;TYPE=CELL:')) contact.en.mobilePhone = line.replace('TEL;TYPE=CELL:', '');
+                    if (line.startsWith('EMAIL;TYPE=INTERNET;TYPE=WORK:')) {
+                        contact.en.email = contact.zh.email = line.replace('EMAIL;TYPE=INTERNET;TYPE=WORK:', '');
+                    }
+                    if (line.startsWith('ADR;TYPE=WORK:')) {
+                        const address = line.replace('ADR;TYPE=WORK:;;', '').replace(/\\n/g, ', ').replace(/;+/g, ', ').trim();
+                        contact.en.address = address.split(';;')[0].replace(/,+/g, ', ').trim();
+                        contact.zh.address = address.split(';;')[1].replace(/,+/g, ', ').trim();
+                    }
+                    if (line.startsWith('item1.URL:')) contact.en.website1 = contact.zh.website1 = line.replace('item1.URL:', '');
+                    if (line.startsWith('item2.URL:')) contact.en.website2 = contact.zh.website2 = line.replace('item2.URL:', '');
+                    if (line.startsWith('NOTE:')) {
+                        const noteParts = line.replace('NOTE:', '').split('\\n');
+                        contact.en.note = noteParts[0];
+                        contact.zh.note = noteParts[1];
+                        contact.zh.fullName = noteParts[2].replace('姓名: ', '');
+                        contact.zh.nickname = noteParts[3].replace('綽號: ', '');
+                        contact.zh.title = noteParts[4].replace('職位: ', '');
+                        contact.zh.company = noteParts[5].replace('公司: ', '');
+                    }
                 }
-                if (line.startsWith('ORG:')) contact.company = line.replace('ORG:', '');
-                if (line.startsWith('EMAIL:')) contact.email = line.replace('EMAIL:', '');
-                if (line.startsWith('TEL:')) contact.phone = line.replace('TEL:', '');
-                if (line.startsWith('ADR:')) contact.address = line.replace('ADR:', '').replace(/;/g, ', ');
-                if (line.startsWith('TITLE:')) contact.title = line.replace('TITLE:', '');
             });
+
             return contact;
         }
 
         // Display contact information
-        function displayContact(contact) {
+        function displayContact(contact, contactName, lang = 'en') {
             const card = document.getElementById('contact-card');
+            const data = contact[lang];
             card.innerHTML = `
-                <h1>${contact.fullName || contact.name || 'Unknown Name'}</h1>
-                ${contact.title ? `<p><strong>Title:</strong> ${contact.title}</p>` : ''}
-                ${contact.company ? `<p><strong>Company:</strong> ${contact.company}</p>` : ''}
-                ${contact.email ? `<p><strong>Email:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>` : ''}
-                ${contact.phone ? `<p><strong>Phone:</strong> <a href="tel:${contact.phone}">${contact.phone}</a></p>` : ''}
-                ${contact.address ? `<p><strong>Address:</strong> ${contact.address}</p>` : ''}
+                ${data.photo ? `<img src="${data.photo}" alt="${data.fullName || 'Contact'}">` : ''}
+                <h1>${data.fullName || 'Unknown Name'}</h1>
+                ${data.nickname ? `<div class="nickname">${data.nickname}</div>` : ''}
+                <div class="info-table">
+                    ${data.title ? `<div class="info-row">${data.title}</div>` : ''}
+                    ${data.company ? `<div class="info-row">${data.company}</div>` : ''}
+                    ${data.workPhone ? `
+                        <div class="info-row">
+                            <span class="material-symbols-outlined">phone</span>
+                            <a href="tel:${data.workPhone}">${data.workPhone}</a>
+                        </div>` : ''}
+                    ${data.mobilePhone ? `
+                        <div class="info-row">
+                            <span class="material-symbols-outlined">phone</span>
+                            <a href="tel:${data.mobilePhone}">${data.mobilePhone}</a>
+                        </div>` : ''}
+                    ${data.email ? `
+                        <div class="info-row">
+                            <span class="material-symbols-outlined">mail</span>
+                            <a href="mailto:${data.email}">${data.email}</a>
+                        </div>` : ''}
+                </div>
+                ${data.address ? `<div class="address">${data.address}</div>` : ''}
+                <div class="websites">
+                    ${data.website1 ? `<a href="${data.website1}" target="_blank">${data.website1}</a>` : ''}
+                    ${data.website2 ? `<a href="${data.website2}" target="_blank">${data.website2}</a>` : ''}
+                </div>
+                ${data.note ? `<div class="note">${data.note}</div>` : ''}
+                <button class="language-toggle" onclick="toggleLanguage('${contactName}', '${lang === 'en' ? 'zh' : 'en'}')">
+                    ${lang === 'en' ? 'Switch to Chinese' : 'Switch to English'}
+                </button>
+                <a class="add-contact-btn" href="./contacts/${contactName}.vcf" download="${contactName}.vcf">
+                    <span class="material-symbols-outlined">person_add</span>
+                    Add Contact
+                </a>
             `;
+        }
+
+        // Toggle language
+        function toggleLanguage(contactName, lang) {
+            showLoading();
+            loadContact(contactName, lang);
         }
 
         // Show error message
@@ -87,40 +240,40 @@
             document.getElementById('contact-card').innerHTML = `<p class="loading">Loading...</p>`;
         }
 
-        // Get contact name from URL
+        // Get contact name from URL hash
         function getContactName() {
-            const path = window.location.pathname.replace(/\/$/, ''); // Remove trailing slash
-            const parts = path.split('/').filter(part => part);
-            return parts.length > 0 ? parts[parts.length - 1] : ''; // Last segment or empty
+            const hash = window.location.hash.replace(/^#/, '');
+            return hash || '';
         }
 
         // Load and display VCF
-        async function loadContact() {
+        async function loadContact(contactNameOverride = null, lang = 'en') {
             showLoading();
-            const contactName = getContactName();
+            const contactName = contactNameOverride || getContactName();
             if (!contactName) {
-                showError('No contact specified. Use a URL like /persona or /demo/persona.');
+                showError('Whoops, no contact name provided! Try a URL like /#koolers to meet our team!');
                 return;
             }
 
             try {
                 const response = await fetch(`./contacts/${contactName}.vcf`);
                 if (!response.ok) {
-                    throw new Error(`Contact "${contactName}" not found.`);
+                    throw new Error(`Oops, looks like we don’t have a "${contactName}" on our team!`);
                 }
                 const vcfText = await response.text();
                 const contact = parseVCF(vcfText);
-                if (!contact.fullName && !contact.name) {
+                if (!contact.en.fullName && !contact.zh.fullName) {
                     throw new Error('Invalid VCF file: No name found.');
                 }
-                displayContact(contact);
+                displayContact(contact, contactName, lang);
             } catch (error) {
-                showError(`Error: ${error.message}`);
+                showError(error.message);
             }
         }
 
-        // Load contact when page loads
-        window.onload = loadContact;
+        // Load contact when page loads or hash changes
+        window.onload = () => loadContact();
+        window.onhashchange = () => loadContact();
     </script>
 </body>
 </html>
