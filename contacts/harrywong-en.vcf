@@ -11,8 +11,8 @@ EMAIL;type=INTERNET;type=WORK:harrywong@kool.com.hk
 TEL;type=CELL;type=VOICE;type=pref:+85293094910
 TEL;type=WORK;type=VOICE:+85221809795
 ADR;type=WORK:;;Flat A, 10/F, Goodwill Industrial Bldg., 36 Pak Tin Par St.;Tsuen Wan;NT;;Hong Kong
-URL;type=WORK:https://www.kool.com.hk
-URL;type=WORK:https://www.koolb2b.com.hk
+URL;type=OBM:https://www.kool.com.hk
+URL;type=OEMODM:https://www.koolb2b.com.hk
 NOTE:I have inspired 1,000 global buyers in exhibitions with our kool innovative designed products.
 photo;ENCODING=b;type=jpeg:
  /9j/4AAQSkZJRgABAQAASABIAAD/4QBwRXhpZgAATU0AKgAAAAgABAEGAAMAAAABAAIAAAES

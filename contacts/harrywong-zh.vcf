@@ -11,8 +11,8 @@ EMAIL;type=INTERNET;type=WORK:harrywong@kool.com.hk
 TEL;type=CELL;type=VOICE;type=pref:+85293094910
 TEL;type=WORK;type=VOICE:+85221809795
 ADR;type=WORK:;;香港新界荃灣白田壩街36號信義工業大廈10樓A室;荃灣;新界;;香港
-URL;type=WORK:https://www.kool.com.hk
-URL;type=WORK:https://www.koolb2b.com.hk
+URL;type=OBM:https://www.kool.com.hk
+URL;type=OEMODM:https://www.koolb2b.com.hk
 NOTE:以我們的創新設計產品，我在國際展覽中啟發了1,000名買家。
 photo;ENCODING=b;type=jpeg:
  /9j/4AAQSkZJRgABAQAASABIAAD/4QBwRXhpZgAATU0AKgAAAAgABAEGAAMAAAABAAIAAAES
