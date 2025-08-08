@@ -4,8 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact Card</title>
-  <!-- Using the same icon font you provided -->
+
+  <!-- Material Symbols (icons) -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=person_add" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=badge" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=domain" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=mail" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=call" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=mobile_2" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=location_on" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=captive_portal" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=chat" />
+
   <style>
     :root {
       --bg: #5b6770;
@@ -29,7 +39,7 @@
     }
     .wrap {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       position: relative;
     }
     .card {
@@ -40,24 +50,26 @@
       width: 100%;
       text-align: center;
     }
+
+    /* Single toggle button (bigger) */
     .lang-toggle {
       position: absolute;
-      top: -8px;
-      right: -8px;
-      display: flex;
-      gap: 8px;
+      top: -10px;
+      right: -6px;
     }
-    .lang-toggle button {
+    .lang-btn {
       border: none;
-      background: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.98);
       color: var(--text);
-      padding: 8px 10px;
+      width: 48px;
+      height: 48px;
+      font-size: 16px;
+      font-weight: 800;
       border-radius: 999px;
-      font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,.15);
+      box-shadow: 0 2px 10px rgba(0,0,0,.2);
     }
-    .lang-toggle button.active {
+    .lang-btn.active {
       background: var(--accent);
       color: #fff;
     }
@@ -72,7 +84,7 @@
     }
     .card h1 {
       font-size: 24px;
-      margin: 0 0 12px;
+      margin: 0 0 8px;
       color: var(--text);
       word-break: break-word;
     }
@@ -84,15 +96,27 @@
     .info-table {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       text-align: left;
       margin-top: 8px;
     }
     .info-row {
       display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 12px;
+      grid-template-columns: 26px 120px 1fr;
+      gap: 10px;
       align-items: start;
+    }
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      color: var(--accent);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 20px;
+      line-height: 1;
     }
     .label {
       font-weight: 700;
@@ -125,20 +149,15 @@
     .add-contact-btn:hover { background-color: var(--accent-hover); }
     .add-contact-btn .material-symbols-outlined { font-size: 20px; }
 
-    .meta {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #777;
-      text-align: center;
-    }
-
     .error, .loading {
       color: #fff;
       text-align: center;
       font-size: 16px;
+      margin-top: 10px;
     }
-    @media (max-width: 420px) {
-      .info-row { grid-template-columns: 100px 1fr; }
+
+    @media (max-width: 480px) {
+      .info-row { grid-template-columns: 26px 96px 1fr; }
       .lang-toggle { top: -12px; right: 0; }
     }
   </style>
@@ -146,8 +165,7 @@
 <body>
   <div class="wrap">
     <div class="lang-toggle" aria-label="Language switch">
-      <button id="btn-zh" type="button">中</button>
-      <button id="btn-en" type="button" class="active">EN</button>
+      <button id="langBtn" type="button" class="lang-btn" title="Switch language">中</button>
     </div>
     <div id="contact-card" class="card"></div>
     <p id="status" class="loading" aria-live="polite"></p>
@@ -156,7 +174,6 @@
   <script>
     // --- Utilities ----------------------------------------------------------
 
-    // Unfold vCard lines (RFC 2425/2426): lines starting with space/tab are continuations
     function unfoldVCF(text) {
       const raw = text.replace(/\r\n/g, "\n").split("\n");
       const out = [];
@@ -171,7 +188,6 @@
       return out;
     }
 
-    // Unescape vCard text (\, \; \\ \n)
     function unescapeVCard(value = "") {
       return value
         .replace(/\\n/gi, "\n")
@@ -181,7 +197,6 @@
     }
 
     function parseParams(nameAndParams) {
-      // e.g. "TEL;TYPE=CELL;TYPE=VOICE" -> { name: 'TEL', params: ['TYPE=CELL','TYPE=VOICE'] }
       const parts = nameAndParams.split(";");
       const name = parts.shift().toUpperCase();
       const params = parts.map(p => p.trim());
@@ -232,7 +247,6 @@
             contact.fullName ||= value;
             break;
           case "N": {
-            // N:Last;First;Middle;Prefix;Suffix
             const [last = "", first = ""] = value.split(";");
             contact.firstName = first;
             contact.lastName = last;
@@ -260,7 +274,6 @@
             }
             break;
           case "ADR": {
-            // ADR: PO Box;Extended;Street;City;Region;PostalCode;Country
             const parts = value.split(";");
             const street = parts[2] || "";
             const city = parts[3] || "";
@@ -279,7 +292,6 @@
             break;
           default:
             if (name.startsWith("PHOTO")) {
-              // already unfolded; likely single line base64
               contact.photo = value.startsWith("data:")
                 ? value
                 : `data:image/jpeg;base64,${value}`;
@@ -288,7 +300,6 @@
         }
       }
 
-      // Derive display name if missing
       if (!contact.fullName) {
         contact.fullName = [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim();
       }
@@ -311,7 +322,8 @@
         loading: "Loading...",
         missing: name => `Whoops, no contact name provided! Try a URL like /#${name} to meet our team!`,
         notFound: who => `Oops, looks like we don’t have a "${who}" on our team!`,
-        note: "Note"
+        note: "Note",
+        toggleLabel: "中"
       },
       zh: {
         title: "職稱",
@@ -325,7 +337,8 @@
         loading: "載入中…",
         missing: name => `未提供聯絡人代號。請嘗試網址如：/#${name}`,
         notFound: who => `找不到「${who}」的聯絡人。`,
-        note: "備註"
+        note: "備註",
+        toggleLabel: "EN"
       }
     };
 
@@ -336,15 +349,28 @@
     let zhExists = false;
     let enExists = false;
 
+    function updateToggleLabel() {
+      const btn = document.getElementById("langBtn");
+      btn.textContent = i18n[currentLang].toggleLabel;
+      btn.classList.toggle("active", currentLang === "zh");
+      btn.setAttribute("aria-label", currentLang === "zh" ? "Switch to English" : "切換至中文");
+      document.documentElement.lang = currentLang === "zh" ? "zh-Hant" : "en";
+    }
+
     function setLang(lang) {
       currentLang = lang;
-      document.documentElement.lang = lang === "zh" ? "zh-Hant" : "en";
       localStorage.setItem("kool-lang", lang);
-      document.getElementById("btn-zh").classList.toggle("active", lang === "zh");
-      document.getElementById("btn-en").classList.toggle("active", lang === "en");
-      if (contactEN || contactZH) {
-        render();
-      }
+      updateToggleLabel();
+      if (contactEN || contactZH) render();
+    }
+
+    function row(icon, label, valueHTML) {
+      return `
+        <div class="info-row">
+          <div class="icon"><span class="material-symbols-outlined">${icon}</span></div>
+          <div class="label">${label}:</div>
+          <div class="value">${valueHTML}</div>
+        </div>`;
     }
 
     function render() {
@@ -358,83 +384,43 @@
       status.textContent = "";
       const photoHTML = c.photo ? `<img class="avatar" src="${c.photo}" alt="${c.fullName}" onload="this.style.display='block'">` : "";
 
-      const websites = (c.websites || []).map((u, i) => {
+      const websites = (c.websites || []).map(u => {
         const clean = u.replace(/^https?:\/\//i, "");
         return `<div><a href="${u}" target="_blank" rel="noopener">${clean}</a></div>`;
       }).join("");
 
-      const note = c.note ? `
-        <div class="info-row">
-          <div class="label">${t.note}:</div>
-          <div class="value">${c.note.replace(/\n/g, "<br>")}</div>
-        </div>` : "";
-
       const downloadHref = currentLang === "zh" && zhExists
         ? `./contacts/${contactName}-zh.vcf`
         : `./contacts/${contactName}-en.vcf`;
-
-      const addLabel = t.addContact;
 
       card.innerHTML = `
         ${photoHTML}
         <h1>${c.fullName || "—"}</h1>
         ${c.nickname ? `<p class="subtitle">${c.nickname}</p>` : ""}
         <div class="info-table">
-          ${c.title ? `
-            <div class="info-row">
-              <div class="label">${t.title}:</div>
-              <div class="value">${c.title}</div>
-            </div>` : ""}
-          ${c.company ? `
-            <div class="info-row">
-              <div class="label">${t.company}:</div>
-              <div class="value">${c.company}</div>
-            </div>` : ""}
-          ${c.email ? `
-            <div class="info-row">
-              <div class="label">${t.email}:</div>
-              <div class="value"><a href="mailto:${c.email}">${c.email}</a></div>
-            </div>` : ""}
-          ${c.workPhone ? `
-            <div class="info-row">
-              <div class="label">${t.workPhone}:</div>
-              <div class="value"><a href="tel:${c.workPhone}">${c.workPhone}</a></div>
-            </div>` : ""}
-          ${c.mobilePhone ? `
-            <div class="info-row">
-              <div class="label">${t.mobilePhone}:</div>
-              <div class="value"><a href="tel:${c.mobilePhone}">${c.mobilePhone}</a></div>
-            </div>` : ""}
-          ${c.address ? `
-            <div class="info-row">
-              <div class="label">${t.address}:</div>
-              <div class="value">${c.address}</div>
-            </div>` : ""}
-          ${websites ? `
-            <div class="info-row">
-              <div class="label">${t.website}:</div>
-              <div class="value">${websites}</div>
-            </div>` : ""}
-          ${note}
+          ${c.title ? row("badge", t.title, c.title) : ""}
+          ${c.company ? row("domain", t.company, c.company) : ""}
+          ${c.email ? row("mail", t.email, `<a href="mailto:${c.email}">${c.email}</a>`) : ""}
+          ${c.workPhone ? row("call", t.workPhone, `<a href="tel:${c.workPhone}">${c.workPhone}</a>`) : ""}
+          ${c.mobilePhone ? row("mobile_2", t.mobilePhone, `<a href="tel:${c.mobilePhone}">${c.mobilePhone}</a>`) : ""}
+          ${c.address ? row("location_on", t.address, c.address) : ""}
+          ${websites ? row("captive_portal", t.website, websites) : ""}
+          ${c.note ? row("chat", t.note, c.note.replace(/\n/g, "<br>")) : ""}
         </div>
         <div class="btns">
           <a class="add-contact-btn" href="${downloadHref}" download>
             <span class="material-symbols-outlined">person_add</span>
-            ${addLabel}
+            ${t.addContact}
           </a>
-        </div>
-        <div class="meta">
-          ${currentLang === "zh"
-            ? (zhExists ? "將下載中文聯絡卡" : "未找到中文聯絡卡，將使用英文")
-            : (enExists ? "Will download English vCard" : "English vCard not found, using Chinese")}
         </div>
       `;
     }
 
-    function showStatus(msgKeyOrText) {
+    function showStatus(messageOrKey) {
       const status = document.getElementById("status");
-      status.className = /載入|Loading/.test(msgKeyOrText) ? "loading" : "error";
-      status.textContent = i18n[currentLang][msgKeyOrText] || msgKeyOrText;
+      const text = i18n[currentLang][messageOrKey] || messageOrKey;
+      status.className = /載入|Loading/.test(text) ? "loading" : "error";
+      status.textContent = text;
     }
 
     function getContactName() {
@@ -464,8 +450,7 @@
       const enURL = `./contacts/${contactName}-en.vcf`;
       const zhURL = `./contacts/${contactName}-zh.vcf`;
 
-      // Try loading both; tolerate one missing
-      const tasks = [
+      await Promise.all([
         (async () => {
           try {
             const txt = await fetchIfExists(enURL);
@@ -480,9 +465,7 @@
             contactZH = parseVCF(txt);
           } catch (_) { zhExists = false; }
         })()
-      ];
-
-      await Promise.all(tasks);
+      ]);
 
       if (!enExists && !zhExists) {
         showStatus(currentLang === "zh" ? i18n.zh.notFound(contactName) : i18n.en.notFound(contactName));
@@ -490,15 +473,17 @@
         return;
       }
 
-      showStatus(""); // clear
+      showStatus("");
       render();
     }
 
     // Events
     window.addEventListener("load", () => {
-      document.getElementById("btn-zh").addEventListener("click", () => setLang("zh"));
-      document.getElementById("btn-en").addEventListener("click", () => setLang("en"));
-      setLang(currentLang);
+      document.getElementById("langBtn").addEventListener("click", () => {
+        setLang(currentLang === "zh" ? "en" : "zh");
+      });
+      updateToggleLabel();
+      setLang(localStorage.getItem("kool-lang") || "en");
       loadContact();
     });
     window.addEventListener("hashchange", loadContact);
