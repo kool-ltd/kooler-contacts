@@ -1,25 +1,22 @@
-begin:vcard
-version:3.0
-prodid:Microsoft-MacOutlook/10.10.1b.201012
-UID:DC6C1FF7-05BA-4504-9937-CCA40B6BDEA9
-fn;charset=utf-8:Harry Wong
-n;charset=utf-8:Wong;Harry;;市場銷售及傳訊經理;
-nickname;charset=utf-8:the inspirator
-title;charset=utf-8:Smarketing & Communications Manager
-org;charset=utf-8:Kool Limited;
-url;charset=utf-8;type=work:www.koolb2b.com.hk
-adr;charset=utf-8;type=work;type=pref:;; Flat A\, 10/F\, Goodwill Industrial Bldg.\, 36 Pak Tin Par St.;Tsuen Wan;New Territories;;Hong Kong
-label;charset=utf-8;type=work;type=pref: Flat A\, 10/F\, Goodwill Industrial Bldg.\, 36 Pak Tin Par St.\nTsuen Wan\, New Territories\nHong Kong
-adr;charset=utf-8;type=other;type=pref:;;白田壩街36號信義工業大廈10樓A室;荃灣;新界;;香港
-label;charset=utf-8;type=other;type=pref:白田壩街36號信義工業大廈10樓A室\n荃灣\, 新界\n香港
-tel;charset=utf-8;type=work:2180 9795
-tel;charset=utf-8;type=cell:9309 4910
-email;charset=utf-8;type=internet;type=pref;type=work:harrywong@kool.com.hk
-email;charset=utf-8;type=internet;type=home:www.kool.com.hk
-X-custom;charset=utf-8;type=1:啓發者
-X-custom;charset=utf-8;type=2:黃廷耀
-X-custom;charset=utf-8;type=3:I have inspired 1\,000 global buyers in exhibitions with our kool innovative designed products.
-X-custom;charset=utf-8;type=4: 以我們的創新設計產品，我在國際展覽中啟發了1\,000名買家。
+BEGIN:VCARD
+VERSION:3.0
+N:Wong;Harry;;;
+FN:Harry Wong (黃廷耀)
+NICKNAME:the inspirator / 啓發者
+ORG:Kool Limited / 酷有限公司
+TITLE:Smarketing & Communications Manager
+EMAIL;type=INTERNET;type=WORK:harrywong@kool.com.hk
+TEL;type=CELL;type=VOICE;type=pref:+85293094910
+TEL;type=WORK;type=VOICE:+85221809795
+item1.ADR;type=WORK:;;Flat A\, 10/F\, Goodwill Industrial Bldg.\, 36 Pak Tin Par St.;Tsuen Wan;NT;;Hong Kong
+item1.X-ABLabel:Work (EN)
+item2.ADR;type=WORK:;;香港新界荃灣白田壩街36號信義工業大廈10樓A室;荃灣;新界;;香港
+item2.X-ABLabel:工作（中文）
+item3.URL;type=WORK:https://www.kool.com.hk
+item3.X-ABLabel:OBM Website
+item4.URL;type=WORK:https://www.koolb2b.com.hk
+item4.X-ABLabel:OEM Website
+NOTE:I have inspired 1\,000 global buyers in exhibitions with our kool innovative designed products.\n以我們的創新設計產品，我在國際展覽中啟發了1\,000名買家。
 photo;ENCODING=b;type=jpeg:
  /9j/4AAQSkZJRgABAQAASABIAAD/4QBwRXhpZgAATU0AKgAAAAgABAEGAAMAAAABAAIAAAES
  AAMAAAABAAEAAAEoAAMAAAABAAIAAIdpAAQAAAABAAAAPgAAAAAAA6ABAAMAAAABAAEAAKAC
