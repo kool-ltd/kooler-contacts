@@ -105,7 +105,7 @@
       font-family: 'Material Symbols Outlined';
       font-weight: normal;
       font-style: normal;
-      font-size: 22px;        /* icon size */
+      font-size: 22px;            /* icon size */
       line-height: 1;
       display: inline-block;
       letter-spacing: normal;
@@ -147,11 +147,30 @@
     .add-contact-btn:hover { background-color: var(--accent-hover); }
     .add-contact-btn .material-symbols-outlined { color: #fff; font-size: 22px; }
 
-    .error, .loading {
+    /* Loading / status styling with spinner */
+    .loading {
       color: #fff;
       text-align: center;
       font-size: 16px;
       margin-top: 10px;
+      display: inline-flex;            /* allow spinner and text inline */
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 22px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,.6);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     @media (max-width: 480px) {
@@ -167,7 +186,7 @@
       <button id="langBtn" type="button" class="lang-btn" title="Switch language">中</button>
     </div>
     <div id="contact-card" class="card"></div>
-    <p id="status" class="loading" aria-live="polite"></p>
+    <p id="status" class="loading" aria-live="polite" aria-atomic="false"></p>
   </div>
 
   <script>
@@ -207,7 +226,7 @@
         const up = p.toUpperCase();
         return up === val.toUpperCase() ||
                up === `TYPE=${val.toUpperCase()}` ||
-               (up.startsWith("TYPE=") && up.split("=").pop().split(",").includes(val.toUpperCase()));
+              (up.startsWith("TYPE=") && up.split("=").pop().split(",").includes(val.toUpperCase()));
       });
     }
 
@@ -355,15 +374,17 @@
         </div>`;
     }
 
+    // --- UI render ---------------------------------------------------------
+
     function render() {
       const t = i18n[currentLang];
       const card = document.getElementById("contact-card");
       const status = document.getElementById("status");
 
       const c = currentLang === "zh" ? (contactZH || contactEN) : (contactEN || contactZH);
-      if (!c) { status.textContent = ""; card.innerHTML = ""; return; }
+      if (!c) { status.innerHTML = ""; card.innerHTML = ""; return; }
 
-      status.textContent = "";
+      status.innerHTML = "";
       const photoHTML = c.photo ? `<img class="avatar" src="${c.photo}" alt="${c.fullName}" onload="this.style.display='block'">` : "";
 
       const websites = (c.websites || []).map(u => {
@@ -377,7 +398,7 @@
 
       card.innerHTML = `
         ${photoHTML}
-        <h1>${c.fullName || "—"}</h1>
+        <h1>${c.fullName || "--"}</h1>
         ${c.nickname ? `<p class="subtitle">${c.nickname}</p>` : ""}
         <div class="info-table">
           ${c.title ? row("badge", c.title) : ""}
@@ -400,9 +421,15 @@
 
     function showStatus(messageOrKey) {
       const status = document.getElementById("status");
+      // Clear if no message
+      if (!messageOrKey) {
+        status.innerHTML = "";
+        status.className = "";
+        return;
+      }
       const text = i18n[currentLang][messageOrKey] || messageOrKey;
+      status.innerHTML = `<span class="spinner" aria-hidden="true"></span>${text}`;
       status.className = /載入|Loading/.test(text) ? "loading" : "error";
-      status.textContent = text;
     }
 
     function getContactName() {
@@ -424,6 +451,7 @@
         return;
       }
 
+      // show loading state
       showStatus(currentLang === "zh" ? i18n.zh.loading : i18n.en.loading);
 
       contactEN = contactZH = null;
@@ -455,6 +483,7 @@
         return;
       }
 
+      // clear loading state and render
       showStatus("");
       render();
     }
